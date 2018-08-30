@@ -1,4 +1,5 @@
 // global array/object för lagring av todos..
+// lagringsvariabel
 var todoObj = {}
 
 
