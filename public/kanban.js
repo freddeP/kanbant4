@@ -1,6 +1,41 @@
 // global array/object för lagring av todos..
 // lagringsvariabel
-var todoObj = {}
+var todoObj = {};
+
+window.addEventListener("DOMContentLoaded", initContent);
+
+
+function initContent(){
+    // Hämta sträng från local storage
+    let todo = localStorage.getItem('todo');
+    
+    if(todo.length<3) return false;
+    console.log(typeof todo + todo.length);
+    // gör om till objekt igen
+    todoObj = JSON.parse(todo);
+  
+   // const kanban = _classArr('kanban');
+
+    for(let i in todoObj)
+    {
+        //console.log(todoObj[i]);
+
+        let initTemplate = _classArr("taskTemplate")[0];
+        let newTemplate = initTemplate.cloneNode(true);
+        newTemplate.className = todoObj[i].className;
+        newTemplate.innerHTML = todoObj[i].content;
+        newTemplate.id = i;
+        let kanban = _classArr('kanban');
+        kanban[todoObj[i].kanban].appendChild(newTemplate);
+
+        newTemplate.addEventListener("click", toNext);
+        newTemplate.children[2].addEventListener("click", deleteParent);
+        newTemplate.children[3].addEventListener("click", goBack);
+
+        //console.log(newTemplate);
+
+    }
+}
 
 
 
@@ -40,11 +75,12 @@ function saveNewTask(){
         
         let todoInfo = {};
         todoInfo.kanban = 0;
-        todoInfo.content = newTemplate;
+        todoInfo.content = newTemplate.innerHTML;
+        todoInfo.className =  newTemplate.className; 
         todoObj[id] = todoInfo;
        
         console.log(todoObj);
-
+        saveToLocal();
 
 
     }
@@ -53,10 +89,7 @@ function saveNewTask(){
 
 
 function toNext(){
-    
 
-
-    
     // Hämta kanbanklassen och gör om till array
     const kanban = Array.from(document.getElementsByClassName('kanban'));
 
@@ -68,10 +101,10 @@ function toNext(){
         // Det vi klickade på finns i this
         // Det har ett id som låter oss komma åt todoObj
         const id = this.id;
-
+      
         todoObj[id].kanban += 1;
         console.log(todoObj); 
-
+        saveToLocal();
     }
 
 
@@ -82,11 +115,14 @@ function toNext(){
 
 function deleteParent(ev)
 {
+
     ev.stopPropagation();
     const parent = this.parentElement;
+    const id = parent.id;
     const gp = parent.parentElement;
     gp.removeChild(parent); 
-
+    delete todoObj[id];
+    saveToLocal();
 }
 
 function goBack(ev){
@@ -108,8 +144,10 @@ function goBack(ev){
     const id = this.parentElement.id;
 
     todoObj[id].kanban -= 1;
-    console.log(todoObj); 
+    //console.log(todoObj); 
 
+
+        saveToLocal();
 
     }
 
@@ -120,4 +158,11 @@ function goBack(ev){
 
 function _classArr(cName){
     return Array.from(document.getElementsByClassName(cName));
+}
+
+
+function saveToLocal()
+{
+    const todoString = JSON.stringify(todoObj);
+    localStorage.setItem("todo",todoString);
 }
